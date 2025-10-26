@@ -864,8 +864,6 @@ function createPlaylistSection(playlist) {
                             <div class="play-icon"></div>
                             <div class="pause-icon"></div>
                         </div>
-                        <button class="add-to-playlist-card-btn" onclick="event.stopPropagation(); showAddToPlaylistModal('${song.id}')" title="Добавить в плейлист">
-                        </button>
                         <div class="song-info">
                             <h4>${song.name}</h4>
                             <p>${song.artist}</p>
