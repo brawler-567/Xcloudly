@@ -937,7 +937,7 @@ button:hover {
     background-color: #000000;
 }
 
-/* Стили для иконки звука как в Spotify */
+/* Стили для иконки звука */
 .volume-btn {
     position: relative;
     width: 32px;
@@ -977,27 +977,14 @@ button:hover {
     height: 14px;
 }
 
-.volume-cross {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 2px;
-    height: 16px;
-    background: #b3b3b3;
-    border-radius: 1px;
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(45deg) scale(0);
-    transition: all 0.3s ease;
-}
-
 /* Состояния в зависимости от громкости */
 
 /* Выключен звук */
 .volume-btn.muted .volume-bar-1,
 .volume-btn.muted .volume-bar-2,
 .volume-btn.muted .volume-bar-3 {
-    opacity: 0;
-    transform: scale(0.5);
+    opacity: 0.3;
+    transform: scale(0.7);
 }
 
 .volume-btn.muted .volume-cross {

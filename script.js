@@ -404,15 +404,6 @@ function cancelUpload() {
     currentFile = null;
 }
 
-function clearLibrary() {
-    if (confirm('Вы уверены, что хотите удалить ВСЕ треки из библиотеки?')) {
-        musicLibrary = [];
-        localStorage.setItem('musicLibrary', JSON.stringify(musicLibrary));
-        alert('Библиотека очищена!');
-        performSearch();
-    }
-}
-
 function showSection(sectionName, playlistId = null) {
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
