@@ -227,7 +227,7 @@ body {
     position: absolute;
 }
 
-/* Play иконка (треугольник) */
+/* Play иконка */
 .play-icon {
     width: 0;
     height: 0;
@@ -237,7 +237,7 @@ body {
     margin-left: 2px;
 }
 
-/* Pause иконка (две вертикальные линии) */
+/* Pause иконка */
 .pause-icon {
     display: flex;
     gap: 4px;
@@ -254,7 +254,7 @@ body {
     border-radius: 2px;
 }
 
-/* Состояние play */
+/* play */
 .play-overlay.playing .play-icon {
     opacity: 0;
     transform: scale(0.5) rotate(-90deg);
@@ -265,7 +265,7 @@ body {
     transform: scale(1);
 }
 
-/* Состояние pause */
+/* pause */
 .play-overlay:not(.playing) .play-icon {
     opacity: 1;
     transform: scale(1);
@@ -303,6 +303,25 @@ body {
     background: #181818;
     cursor: pointer;
     transition: all 0.3s ease;
+}
+
+.upload-zone button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #1db954;
+    color: white;
+    margin-top: 10px;
+}
+
+.upload-zone button:hover {
+    background: #1ed760;
+    transform: scale(1.05);
 }
 
 .upload-zone:hover {
@@ -343,7 +362,7 @@ body {
     word-break: break-all;
 }
 
-/* Плеер Spotify */
+/* Плеер */
 .spotify-player {
     position: fixed;
     bottom: 0;
@@ -668,7 +687,7 @@ button:hover {
     margin-top: 4px;
 }
 
-/* Стили для модального окна выбора треков */
+/* Стили для окна выбора треков */
 .songs-selection-modal {
     max-width: 800px;
     max-height: 80vh;
@@ -908,14 +927,14 @@ button:hover {
 }
 
 .add-to-playlist-card-btn:hover {
-    background: #1db954; /* Зеленый фон при наведении */
+    background: #1db954;
     transform: scale(1.1);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .add-to-playlist-card-btn:hover::before,
 .add-to-playlist-card-btn:hover::after {
-    background-color: #000000; /* Чёрный крестик при наведении */
+    background-color: #000000;
 }
 
 /* Стили для иконки звука как в Spotify */
@@ -973,7 +992,7 @@ button:hover {
 
 /* Состояния в зависимости от громкости */
 
-/* Выключен звук (muted) */
+/* Выключен звук */
 .volume-btn.muted .volume-bar-1,
 .volume-btn.muted .volume-bar-2,
 .volume-btn.muted .volume-bar-3 {

@@ -296,7 +296,7 @@ async function uploadToCloudinary(file) {
 
 async function addToLibrary(file, duration, title, artist) {
     try {
-        document.getElementById('confirmUpload').innerHTML = '⏳ Загружаем на Сервер...';
+        document.getElementById('confirmUpload').innerHTML = 'Введите название трека и исполнителя';
         document.getElementById('confirmUpload').disabled = true;
 
         const cloudinaryData = await uploadToCloudinary(file);
@@ -318,7 +318,6 @@ async function addToLibrary(file, duration, title, artist) {
         showSection('home');
 
     } catch (error) {
-        alert('❌ Ошибка загрузки: ' + error.message);
         document.getElementById('confirmUpload').innerHTML = '✅ Добавить в библиотеку';
         document.getElementById('confirmUpload').disabled = false;
     }
@@ -350,16 +349,14 @@ function showSection(sectionName, playlistId = null) {
     
     if (sectionName === 'playlist' && playlistId) {
         showPlaylistSection(playlistId);
-        
-        // Находим и активируем соответствующий плейлист в сайдбаре
+
         const playlistItem = document.querySelector(`[onclick*="${playlistId}"]`);
         if (playlistItem) {
             playlistItem.classList.add('active');
         }
     } else {
         document.getElementById(sectionName + '-section').classList.add('active');
-        
-        // Находим и активируем соответствующую вкладку в сайдбаре
+
         const navItems = document.querySelectorAll('.nav-item');
         for (let item of navItems) {
             const navText = item.querySelector('.nav-text').textContent.toLowerCase();
@@ -432,8 +429,7 @@ function playSong(songId, playlistSongs = null) {
     const audioElement = document.getElementById('audioElement');
     const nowPlayingTitle = document.getElementById('nowPlayingTitle');
     const nowPlayingArtist = document.getElementById('nowPlayingArtist');
-    
-    // Если уже играет эта песня, просто переключаем паузу
+
     if (audioElement.src === song.url && !audioElement.paused) {
         togglePlay();
         return;
@@ -442,8 +438,7 @@ function playSong(songId, playlistSongs = null) {
     audioElement.src = song.url;
     nowPlayingTitle.textContent = song.name;
     nowPlayingArtist.textContent = song.artist;
-    
-    // Обновляем все кнопки play на карточках
+
     updateAllPlayButtons();
     
     togglePlay();
@@ -479,7 +474,6 @@ function toggleRepeat() {
     }
 }
 
-// Функция переключения случайного воспроизведения
 function toggleShuffle() {
     const shuffleBtn = document.querySelector('.shuffle-btn');
     isShuffle = !isShuffle;
@@ -495,25 +489,21 @@ function toggleShuffle() {
     }
 }
 
-// Включение случайного воспроизведения
 function enableShuffle() {
     const songs = currentPlaylist ? getPlaylistSongs() : musicLibrary;
     originalPlaylistOrder = [...songs];
     currentPlaylistSongs = [...songs];
-    
-    // Перемешиваем массив
+
     for (let i = currentPlaylistSongs.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [currentPlaylistSongs[i], currentPlaylistSongs[j]] = [currentPlaylistSongs[j], currentPlaylistSongs[i]];
     }
-    
-    // Обновляем текущий индекс
+
     const currentSong = document.getElementById('audioElement').src;
     const currentIndex = currentPlaylistSongs.findIndex(song => song.url === currentSong);
     currentTrackIndex = currentIndex !== -1 ? currentIndex : 0;
 }
 
-// Отключение случайного воспроизведения
 function disableShuffle() {
     if (originalPlaylistOrder.length > 0) {
         const currentSong = document.getElementById('audioElement').src;
@@ -559,14 +549,12 @@ function toggleMute() {
     const volumeSlider = document.getElementById('volume');
     
     if (audio.muted) {
-        // Включаем звук
         audio.muted = false;
         volumeSlider.value = lastVolume;
         audio.volume = lastVolume / 100;
         volumeBtn.classList.remove('muted');
         updateVolumeIcon(lastVolume);
     } else {
-        // Выключаем звук
         lastVolume = audio.volume * 100;
         audio.muted = true;
         volumeSlider.value = 0;
@@ -578,8 +566,7 @@ function toggleMute() {
 function initializeVolume() {
     const volumeSlider = document.getElementById('volume');
     const audio = document.getElementById('audioElement');
-    
-    // Устанавливаем начальную громкость
+
     audio.volume = volumeSlider.value / 100;
     updateVolumeIcon(volumeSlider.value);
 }
@@ -590,18 +577,15 @@ function changeVolume(value) {
     
     audio.volume = value / 100;
     audio.muted = false;
-    
-    // Обновляем иконку в зависимости от громкости
+
     updateVolumeIcon(value);
-    
-    // Сохраняем текущую громкость
+
     lastVolume = value;
 }
 
 function updateVolumeIcon(volume) {
     const volumeBtn = document.querySelector('.volume-btn');
-    
-    // Убираем все классы громкости
+
     volumeBtn.classList.remove('muted', 'low', 'medium', 'high');
     
     if (volume == 0) {
@@ -679,8 +663,7 @@ async function savePlaylist() {
         createPlaylistSection(newPlaylist);
         
         closeModal();
-        
-        // Автоматически переходим на созданный плейлист
+
         showSection('playlist', newPlaylist.id);
         
     } catch (error) {
@@ -711,8 +694,7 @@ function updatePlaylistsSidebar() {
             </div>
         `;
     }).join('');
-    
-    // Обновляем активное состояние после рендеринга
+
     if (currentSection === 'playlist' && currentPlaylist) {
         const activePlaylistItem = document.querySelector(`[onclick*="${currentPlaylist}"]`);
         if (activePlaylistItem) {
@@ -724,15 +706,13 @@ function updatePlaylistsSidebar() {
 function showPlaylistSection(playlistId) {
     const playlist = playlists.find(p => p.id === playlistId);
     if (!playlist) return;
-    
-    // Всегда пересоздаем секцию чтобы отобразить актуальные данные
+
     createPlaylistSection(playlist);
     const section = document.getElementById(`playlist-${playlistId}`);
     
     document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
     section.classList.add('active');
-    
-    // Обновляем состояние кнопок
+
     setTimeout(() => updateAllPlayButtons(), 0);
 }
 
@@ -758,8 +738,7 @@ function createPlaylistSection(playlist) {
 
     const songsArray = Array.isArray(playlist.songs) ? playlist.songs : [];
     const songsCount = songsArray.length;
-    
-    // Получаем актуальные данные песен
+
     const playlistSongs = songsArray.map(songId => musicLibrary.find(s => s.id === songId)).filter(Boolean);
     
     section.innerHTML = `
@@ -832,8 +811,7 @@ async function addSongToPlaylist(songId, playlistId = null) {
     
     try {
         const songsArray = Array.isArray(playlist.songs) ? playlist.songs : [];
-        
-        // Проверяем, не добавлена ли песня уже
+
         if (songsArray.includes(songId)) {
             showTempNotification('Этот трек уже есть в плейлисте!');
             return;
@@ -842,24 +820,20 @@ async function addSongToPlaylist(songId, playlistId = null) {
         const updatedSongs = [...songsArray, songId];
         
         await updatePlaylistInDatabase(targetPlaylistId, { songs: updatedSongs });
-        
-        // Обновляем локальный плейлист
+
         playlist.songs = updatedSongs;
         
         const song = musicLibrary.find(s => s.id === songId);
         if (song) {
             showTempNotification(`"${song.name}" добавлен в плейлист "${playlist.name}"!`);
         }
-        
-        // Обновляем отображение плейлиста если он открыт
+
         if (currentPlaylist === targetPlaylistId) {
             showPlaylistSection(targetPlaylistId);
         }
-        
-        // Обновляем сайдбар с количеством треков
+
         updatePlaylistsSidebar();
-        
-        // Закрываем модальное окно если это было добавление из модалки
+
         if (!playlistId) {
             closeAddSongsModal();
         }
