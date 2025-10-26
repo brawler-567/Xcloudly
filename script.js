@@ -13,7 +13,7 @@ const CLOUDINARY_CONFIG = {
 let musicLibrary = [];
 let playlists = [];
 let currentSection = 'home';
-let currentPlaylist = null;
+let currentPlaylist = localStorage.getItem('currentPlaylist') || null;
 let currentTrackIndex = 0;
 let isPlaying = false;
 let currentFile = null;
@@ -32,9 +32,14 @@ let currentPlaylistSongs = [];
 document.addEventListener('DOMContentLoaded', async function() {
     currentUser = await getCurrentUser();
     console.log('Текущий пользователь:', currentUser);
-    
+
     await loadMusicLibrary();
+
     await loadPlaylists();
+    
+    console.log('Загружено плейлистов:', playlists.length);
+    console.log('Загружено песен:', musicLibrary.length);
+    
     showSection('home');
     updatePlaylistsSidebar();
     setupDragAndDrop();
@@ -48,7 +53,23 @@ document.addEventListener('DOMContentLoaded', async function() {
             this.currentTime = 0;
             this.play();
         } else {
-            nextTrack();
+            let songs;
+        
+            if (isShuffle && currentPlaylistSongs.length > 0) {
+                songs = currentPlaylistSongs;
+            } else {
+                songs = currentPlaylist ? getPlaylistSongs() : musicLibrary;
+            }
+        
+            if (songs.length === 0) return;
+
+            if (currentTrackIndex === songs.length - 1) {
+                currentTrackIndex = 0;
+            } else {
+                currentTrackIndex++;
+            }
+        
+            playSong(songs[currentTrackIndex].id, songs);
         }
         updateAllPlayButtons();
     });
@@ -63,6 +84,28 @@ async function getCurrentUser() {
     }
     
     return userId;
+}
+
+function normalizePlaylistData(playlist) {
+    if (!playlist.songs) {
+        playlist.songs = [];
+        return playlist;
+    }
+
+    if (typeof playlist.songs === 'string') {
+        try {
+            playlist.songs = JSON.parse(playlist.songs);
+        } catch (error) {
+            console.error('Ошибка парсинга songs:', error);
+            playlist.songs = [];
+        }
+    }
+
+    if (!Array.isArray(playlist.songs)) {
+        playlist.songs = [];
+    }
+    
+    return playlist;
 }
 
 async function loadMusicLibrary() {
@@ -94,8 +137,20 @@ async function loadPlaylists() {
         
         if (error) throw error;
         
-        playlists = data || [];
+        playlists = (data || []).map(normalizePlaylistData);
+        
         updatePlaylistsSidebar();
+
+        if (currentPlaylist) {
+            const playlistExists = playlists.find(p => p.id === currentPlaylist);
+            if (playlistExists) {
+                showSection('playlist', currentPlaylist);
+            } else {
+                currentPlaylist = null;
+                localStorage.removeItem('currentPlaylist');
+            }
+        }
+        
     } catch (error) {
         console.error('Ошибка загрузки плейлистов:', error);
         playlists = [];
@@ -120,14 +175,19 @@ async function addSongToDatabase(songData) {
 
 async function createPlaylistInDatabase(playlistData) {
     try {
+        const normalizedData = {
+            ...playlistData,
+            songs: JSON.stringify(playlistData.songs || [])
+        };
+        
         const { data, error } = await supabase
             .from('playlists')
-            .insert([playlistData])
+            .insert([normalizedData])
             .select();
         
         if (error) throw error;
-        
-        return data[0];
+
+        return normalizePlaylistData(data[0]);
     } catch (error) {
         console.error('Ошибка создания плейлиста:', error);
         throw error;
@@ -136,12 +196,27 @@ async function createPlaylistInDatabase(playlistData) {
 
 async function updatePlaylistInDatabase(playlistId, updates) {
     try {
+        const normalizedUpdates = { ...updates };
+        if (updates.songs) {
+            normalizedUpdates.songs = JSON.stringify(updates.songs);
+        }
+        
         const { error } = await supabase
             .from('playlists')
-            .update(updates)
+            .update(normalizedUpdates)
             .eq('id', playlistId);
         
         if (error) throw error;
+
+        const playlistIndex = playlists.findIndex(p => p.id === playlistId);
+        if (playlistIndex !== -1) {
+            playlists[playlistIndex] = {
+                ...playlists[playlistIndex],
+                ...updates
+            };
+            playlists[playlistIndex] = normalizePlaylistData(playlists[playlistIndex]);
+        }
+        
     } catch (error) {
         console.error('Ошибка обновления плейлиста:', error);
         throw error;
@@ -348,6 +423,8 @@ function showSection(sectionName, playlistId = null) {
     });
     
     if (sectionName === 'playlist' && playlistId) {
+        currentPlaylist = playlistId;
+        localStorage.setItem('currentPlaylist', playlistId);
         showPlaylistSection(playlistId);
 
         const playlistItem = document.querySelector(`[onclick*="${playlistId}"]`);
@@ -355,6 +432,8 @@ function showSection(sectionName, playlistId = null) {
             playlistItem.classList.add('active');
         }
     } else {
+        currentPlaylist = null;
+        localStorage.removeItem('currentPlaylist');
         document.getElementById(sectionName + '-section').classList.add('active');
 
         const navItems = document.querySelectorAll('.nav-item');
@@ -370,7 +449,6 @@ function showSection(sectionName, playlistId = null) {
     }
     
     currentSection = sectionName;
-    currentPlaylist = playlistId;
 }
 
 function performSearch() {
@@ -523,8 +601,13 @@ function previousTrack() {
     }
     
     if (songs.length === 0) return;
+
+    if (currentTrackIndex === 0) {
+        currentTrackIndex = songs.length - 1;
+    } else {
+        currentTrackIndex = (currentTrackIndex - 1 + songs.length) % songs.length;
+    }
     
-    currentTrackIndex = (currentTrackIndex - 1 + songs.length) % songs.length;
     playSong(songs[currentTrackIndex].id, songs);
 }
 
@@ -538,8 +621,13 @@ function nextTrack() {
     }
     
     if (songs.length === 0) return;
+
+    if (currentTrackIndex === songs.length - 1) {
+        currentTrackIndex = 0;
+    } else {
+        currentTrackIndex = (currentTrackIndex + 1) % songs.length;
+    }
     
-    currentTrackIndex = (currentTrackIndex + 1) % songs.length;
     playSong(songs[currentTrackIndex].id, songs);
 }
 
@@ -717,11 +805,31 @@ function showPlaylistSection(playlistId) {
 }
 
 function getPlaylistSongs(playlistId = null) {
-    const playlist = playlists.find(p => p.id === (playlistId || currentPlaylist));
-    if (!playlist) return [];
+    const targetPlaylistId = playlistId || currentPlaylist;
+    const playlist = playlists.find(p => p.id === targetPlaylistId);
+    
+    if (!playlist) {
+        console.log('Плейлист не найден:', targetPlaylistId);
+        return [];
+    }
+
+    console.log('Данные плейлиста:', playlist);
     
     const songsArray = Array.isArray(playlist.songs) ? playlist.songs : [];
-    return songsArray.map(songId => musicLibrary.find(s => s.id === songId)).filter(Boolean);
+    console.log('ID песен в плейлисте:', songsArray);
+    
+    const result = songsArray
+        .map(songId => {
+            const song = musicLibrary.find(s => s.id === songId);
+            if (!song) {
+                console.log('Песня не найдена в библиотеке:', songId);
+            }
+            return song;
+        })
+        .filter(song => song !== undefined && song !== null);
+    
+    console.log('Найденные песни:', result);
+    return result;
 }
 
 function createPlaylistSection(playlist) {
@@ -736,11 +844,9 @@ function createPlaylistSection(playlist) {
     section.id = `playlist-${playlist.id}`;
     section.className = 'content-section playlist-section';
 
-    const songsArray = Array.isArray(playlist.songs) ? playlist.songs : [];
-    const songsCount = songsArray.length;
+    const playlistSongs = getPlaylistSongs(playlist.id);
+    const songsCount = playlistSongs.length;
 
-    const playlistSongs = songsArray.map(songId => musicLibrary.find(s => s.id === songId)).filter(Boolean);
-    
     section.innerHTML = `
         <header class="content-header">
             <div>
@@ -771,6 +877,8 @@ function createPlaylistSection(playlist) {
     `;
     
     playlistSections.appendChild(section);
+
+    setTimeout(() => updateAllPlayButtons(), 100);
 }
 
 function showAddSongsModal(songs, playlistName) {
@@ -821,7 +929,10 @@ async function addSongToPlaylist(songId, playlistId = null) {
         
         await updatePlaylistInDatabase(targetPlaylistId, { songs: updatedSongs });
 
-        playlist.songs = updatedSongs;
+        const updatedPlaylist = playlists.find(p => p.id === targetPlaylistId);
+        if (updatedPlaylist) {
+            updatedPlaylist.songs = updatedSongs;
+        }
         
         const song = musicLibrary.find(s => s.id === songId);
         if (song) {
@@ -829,7 +940,7 @@ async function addSongToPlaylist(songId, playlistId = null) {
         }
 
         if (currentPlaylist === targetPlaylistId) {
-            showPlaylistSection(targetPlaylistId);
+            createPlaylistSection(playlist);
         }
 
         updatePlaylistsSidebar();
@@ -844,7 +955,6 @@ async function addSongToPlaylist(songId, playlistId = null) {
     }
 }
 
-// Функция для временных уведомлений
 function showTempNotification(message) {
     const notification = document.createElement('div');
     notification.style.cssText = `
