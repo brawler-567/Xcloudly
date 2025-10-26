@@ -1106,3 +1106,35 @@ button:hover {
     50% { transform: scale(1.1); }
     100% { transform: scale(1); }
 }
+
+/* Стили для кнопки удаления из плейлиста */
+.remove-from-playlist-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    color: #b3b3b3;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s;
+    font-size: 18px;
+    z-index: 2;
+}
+
+.remove-from-playlist-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.song-card:hover .remove-from-playlist-btn {
+    opacity: 1;
+}

@@ -864,6 +864,9 @@ function createPlaylistSection(playlist) {
                             <div class="play-icon"></div>
                             <div class="pause-icon"></div>
                         </div>
+                        <button class="remove-from-playlist-btn" onclick="event.stopPropagation(); removeSongFromPlaylist('${song.id}', '${playlist.id}')" title="Удалить из плейлиста">
+                            ×
+                        </button>
                         <div class="song-info">
                             <h4>${song.name}</h4>
                             <p>${song.artist}</p>
@@ -1206,3 +1209,32 @@ function updateAllPlayButtons() {
     });
 }
 
+async function removeSongFromPlaylist(songId, playlistId) {
+    const playlist = playlists.find(p => p.id === playlistId);
+    if (!playlist) return;
+    
+    const song = musicLibrary.find(s => s.id === songId);
+    if (!song) return;
+    
+    try {
+        const songsArray = Array.isArray(playlist.songs) ? playlist.songs : [];
+
+        const updatedSongs = songsArray.filter(id => id !== songId);
+        
+        await updatePlaylistInDatabase(playlistId, { songs: updatedSongs });
+
+        const updatedPlaylist = playlists.find(p => p.id === playlistId);
+        if (updatedPlaylist) {
+            updatedPlaylist.songs = updatedSongs;
+        }
+        
+        showTempNotification(`"${song.name}" удален из плейлиста "${playlist.name}"!`);
+
+        createPlaylistSection(playlist);
+
+        updatePlaylistsSidebar();
+
+    } catch (error) {
+        console.error('Ошибка удаления из плейлиста:', error);
+    }
+}
