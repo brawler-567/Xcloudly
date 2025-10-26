@@ -151,13 +151,22 @@ body {
     border-radius: 24px;
     color: white;
     font-size: 16px;
+    font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 400;
+    transition: all 0.3s ease;
+}
+
+.search-box input::placeholder {
+    color: #b3b3b3;
+    font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 400;
 }
 
 .search-box input:focus {
     outline: none;
     background: #3e3e3e;
+    box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.3);
 }
-
 /* Сетка музыки */
 .music-grid {
     display: grid;
