@@ -930,9 +930,9 @@ async function addSongToPlaylist(songId, playlistId = null) {
         
         await updatePlaylistInDatabase(targetPlaylistId, { songs: updatedSongs });
 
-        const updatedPlaylist = playlists.find(p => p.id === targetPlaylistId);
-        if (updatedPlaylist) {
-            updatedPlaylist.songs = updatedSongs;
+        const playlistIndex = playlists.findIndex(p => p.id === targetPlaylistId);
+        if (playlistIndex !== -1) {
+            playlists[playlistIndex].songs = updatedSongs;
         }
         
         const song = musicLibrary.find(s => s.id === songId);
@@ -941,7 +941,7 @@ async function addSongToPlaylist(songId, playlistId = null) {
         }
 
         if (currentPlaylist === targetPlaylistId) {
-            createPlaylistSection(playlist);
+            updatePlaylistDisplay(targetPlaylistId);
         }
 
         updatePlaylistsSidebar();
@@ -952,7 +952,6 @@ async function addSongToPlaylist(songId, playlistId = null) {
         
     } catch (error) {
         console.error('Ошибка добавления в плейлист:', error);
-        alert('Ошибка добавления в плейлист: ' + error.message);
     }
 }
 
@@ -1223,18 +1222,66 @@ async function removeSongFromPlaylist(songId, playlistId) {
         
         await updatePlaylistInDatabase(playlistId, { songs: updatedSongs });
 
-        const updatedPlaylist = playlists.find(p => p.id === playlistId);
-        if (updatedPlaylist) {
-            updatedPlaylist.songs = updatedSongs;
+        const playlistIndex = playlists.findIndex(p => p.id === playlistId);
+        if (playlistIndex !== -1) {
+            playlists[playlistIndex].songs = updatedSongs;
         }
         
         showTempNotification(`"${song.name}" удален из плейлиста "${playlist.name}"!`);
 
-        createPlaylistSection(playlist);
-
+        updatePlaylistDisplay(playlistId);
+        
         updatePlaylistsSidebar();
 
     } catch (error) {
         console.error('Ошибка удаления из плейлиста:', error);
     }
+}
+
+function updatePlaylistDisplay(playlistId) {
+    const playlist = playlists.find(p => p.id === playlistId);
+    if (!playlist) return;
+
+    const playlistSongs = getPlaylistSongs(playlistId);
+    const songsCount = playlistSongs.length;
+
+    const section = document.getElementById(`playlist-${playlistId}`);
+    if (!section) return;
+
+    const songsGrid = section.querySelector(`#playlist-${playlistId}-songs`);
+    if (!songsGrid) return;
+
+    // Обновляем заголовок с количеством треков
+    const header = section.querySelector('.content-header div');
+    if (header) {
+        const countElement = header.querySelector('p');
+        if (countElement) {
+            countElement.textContent = `${songsCount} треков`;
+        }
+    }
+
+    // Обновляем сетку песен
+    if (songsCount === 0) {
+        songsGrid.innerHTML = '<p style="text-align: center; color: #b3b3b3; grid-column: 1 / -1; margin: 40px 0;">Плейлист пуст</p>';
+    } else {
+        songsGrid.innerHTML = playlistSongs.map(song => `
+            <div class="song-card" data-song-id="${song.id}" data-song-url="${song.url}">
+                <div class="album-art">🎵</div>
+                <div class="play-overlay" onclick="playSong('${song.id}', getPlaylistSongs('${playlistId}'))">
+                    <div class="play-icon"></div>
+                    <div class="pause-icon"></div>
+                </div>
+                <button class="remove-from-playlist-btn" onclick="event.stopPropagation(); removeSongFromPlaylist('${song.id}', '${playlistId}')" title="Удалить из плейлиста">
+                    ×
+                </button>
+                <div class="song-info">
+                    <h4>${song.name}</h4>
+                    <p>${song.artist}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // Обновляем кнопки воспроизведения
+    setTimeout(() => updateAllPlayButtons(), 100);
 }
