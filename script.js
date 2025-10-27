@@ -30,6 +30,9 @@ let originalPlaylistOrder = [];
 let currentPlaylistSongs = [];
 
 document.addEventListener('DOMContentLoaded', async function() {
+
+    document.getElementById('loader').style.display = 'flex';
+    
     currentUser = await getCurrentUser();
     console.log('Текущий пользователь:', currentUser);
 
@@ -73,6 +76,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         updateAllPlayButtons();
     });
+
+    setTimeout(() => {
+        document.getElementById('loader').style.display = 'none';
+        document.querySelector('.app-container').classList.add('loaded');
+        document.querySelector('.spotify-player').classList.add('loaded');
+    }, 1000);
 });
 
 async function getCurrentUser() {
