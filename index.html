@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xCloudly Music</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Загрузчик -->
+    <div id="loader" class="loader-wrapper">
+        <div class="loader-container">
+            <div class="loader"></div>
+            <div class="loader-text">
+                <span class="loader-letter">L</span>
+                <span class="loader-letter">o</span>
+                <span class="loader-letter">a</span>
+                <span class="loader-letter">d</span>
+                <span class="loader-letter">i</span>
+                <span class="loader-letter">n</span>
+                <span class="loader-letter">g</span>
+                <span class="loader-letter">.</span>
+                <span class="loader-letter">.</span>
+                <span class="loader-letter">.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Боковая панель -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-item active" onclick="showSection('home')">
+                        <span class="nav-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12.5 3.247a1 1 0 0 0-1 0L4 7.577V20h4.5v-6a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v6H20V7.577l-7.5-4.33zm-2-1.732a3 3 0 0 1 3 0l7.5 4.33a2 2 0 0 1 1 1.732V21a1 1 0 0 1-1 1h-6.5a1 1 0 0 1-1-1v-6h-3v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.577a2 2 0 0 1 1-1.732l7.5-4.33z"/>
+                            </svg>
+                        </span>
+                        <span class="nav-text">Главная</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('upload')">
+                        <span class="nav-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11.999 3v12.5a3.5 3.5 0 1 1-3.5-3.5H10V7H5.5a5.5 5.5 0 1 0 5.5 5.5v-1.5a3.5 3.5 0 1 1 3.5 3.5h-1.5V13a5.5 5.5 0 1 0-5.5-5.5V3h4.5z"/>
+                            </svg>
+                        </span>
+                        <span class="nav-text">Добавить музыку</span>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <h3 class="section-title">ВАШИ ПЛЕЙЛИСТЫ</h3>
+                    <div id="playlistsList"></div>
+                    <div class="nav-item" onclick="createNewPlaylist()">
+                        <span class="nav-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 3a1 1 0 0 0-1 1v7H4a1 1 0 1 0 0 2h7v7a1 1 0 1 0 2 0v-7h7a1 1 0 1 0 0-2h-7V4a1 1 0 0 0-1-1z"/>
+                            </svg>
+                        </span>
+                        <span class="nav-text">Создать плейлист</span>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <!-- Главная страница с поиском -->
+            <section id="home-section" class="content-section active">
+                <header class="content-header">
+                    <div class="search-container">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="searchInput" placeholder="Поиск песен по названию или артисту...">
+                        </div>
+                    </div>
+                </header>
+
+                <div class="music-grid" id="searchResults">
+                    <!-- Результаты поиска -->
+                </div>
+            </section>
+
+            <!-- Добавление музыки -->
+            <section id="upload-section" class="content-section">
+                <header class="content-header">
+                    <h1>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="#1db954" style="vertical-align: middle; margin-right: 8px;">
+                            <path d="M11.999 3v12.5a3.5 3.5 0 1 1-3.5-3.5H10V7H5.5a5.5 5.5 0 1 0 5.5 5.5v-1.5a3.5 3.5 0 1 1 3.5 3.5h-1.5V13a5.5 5.5 0 1 0-5.5-5.5V3h4.5z"/>
+                        </svg>
+                        Добавить музыку
+                    </h1>
+                    <p>Загружайте MP3 файлы напрямую на сайт (30 сек - 5 мин)</p>
+                </header>
+
+                <div class="upload-container">
+                    <!-- Drag & Drop -->
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="zone-content">
+                            <div class="upload-icon">📁</div>
+                            <h3>Перетащите MP3 файл сюда</h3>
+                            <p>или нажмите для выбора</p>
+                            <input type="file" id="fileInput" accept="audio/mp3,audio/*" hidden>
+                            <button onclick="document.getElementById('fileInput').click()">Выбрать файл</button>
+                        </div>
+                    </div>
+
+                    <!-- Информация о файле -->
+                    <div class="file-info" id="fileInfo" style="display: none;">
+                        <h3>Информация о файле:</h3>
+                        <div id="fileDetails"></div>
+                        <button id="confirmUpload" style="background: #28a745;">✅ Добавить в библиотеку</button>
+                        <button id="cancelUpload" style="background: #dc3545;">❌ Отмена</button>
+                    </div>
+                </div>
+            </section>
+
+            <div id="playlist-sections"></div>
+        </main>
+    </div>
+
+    <!-- Плеер -->
+    <div class="spotify-player" id="spotifyPlayer">
+        <div class="player-left">
+            <div class="now-playing">
+                <div id="nowPlayingArt" class="album-art">🎵</div>
+                <div class="track-info">
+                    <div id="nowPlayingTitle" class="track-title">Выберите трек</div>
+                    <div id="nowPlayingArtist" class="track-artist">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="player-center">
+            <div class="player-controls">
+                <button class="control-btn repeat-btn" onclick="toggleRepeat()" title="Зациклить трек">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M0 4.75A3.75 3.75 0 0 1 3.75 1h8.5A3.75 3.75 0 0 1 16 4.75v5a3.75 3.75 0 0 1-3.75 3.75H9.81l1.018 1.018a.75.75 0 1 1-1.06 1.06L6.939 12.75l2.829-2.828a.75.75 0 1 1 1.06 1.06L9.811 12h2.439a2.25 2.25 0 0 0 2.25-2.25v-5a2.25 2.25 0 0 0-2.25-2.25h-8.5A2.25 2.25 0 0 0 1.5 4.75v5A2.25 2.25 0 0 0 3.75 12H5v1.5H3.75A3.75 3.75 0 0 1 0 9.75v-5z"/>
+                    </svg>
+                </button>
+                <button class="control-btn" onclick="previousTrack()">⏮</button>
+                <button class="control-btn play-pause" onclick="togglePlay()">
+                    <div class="play-icon"></div>
+                    <div class="pause-icon"></div>
+                </button>
+                <button class="control-btn" onclick="nextTrack()">⏭</button>
+                <button class="control-btn shuffle-btn" onclick="toggleShuffle()" title="Случайный порядок">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.49 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5z"/>
+                        <path d="m7.5 10.723.98-1.167.957 1.14a2.25 2.25 0 0 0 1.724.804h1.947l-1.017-1.018a.75.75 0 1 1 1.06-1.06l2.829 2.828-2.829 2.828a.75.75 0 1 1-1.06-1.06L13.109 13H11.16a3.75 3.75 0 0 1-2.873-1.34l-.787-.938z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="progress-container">
+                <span id="currentTime">0:00</span>
+                <div class="progress-bar" onclick="seek(event)">
+                    <div class="progress" id="progress"></div>
+                </div>
+                <span id="duration">0:00</span>
+            </div>
+        </div>
+
+        <div class="player-right">
+    <button class="control-btn volume-btn" onclick="toggleMute()">
+        <div class="volume-icon">
+            <div class="volume-bar volume-bar-1"></div>
+            <div class="volume-bar volume-bar-2"></div>
+            <div class="volume-bar volume-bar-3"></div>
+            <div class="volume-cross"></div>
+        </div>
+    </button>
+    <input type="range" id="volume" min="0" max="100" value="50" oninput="changeVolume(this.value)">
+</div>
+
+        <audio id="audioElement" ontimeupdate="updateProgress()"></audio>
+    </div>
+
+    <!-- плейлист окно -->
+    <div id="playlistModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Создать новый плейлист</h3>
+            <input type="text" id="playlistName" placeholder="Название плейлиста">
+            <div class="modal-actions">
+                <button onclick="savePlaylist()">Создать</button>
+                <button onclick="closeModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="addSongsModal" class="modal" style="display: none;">
+        <div class="modal-content songs-selection-modal">
+            <h3 id="addSongsModalTitle">Добавить треки в плейлист</h3>
+        
+            <div class="songs-list" id="availableSongsList">
+                <!-- Список треков -->
+            </div>
+        
+            <div class="modal-actions">
+                <button onclick="closeAddSongsModal()">Готово</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- подтверждение удаления плейлиста -->
+    <div id="deletePlaylistModal" class="modal delete-confirmation-modal" style="display: none;">
+        <div class="modal-content">
+            <h3>🗑️ Удалить плейлист</h3>
+            <p id="deletePlaylistMessage">Вы точно хотите удалить этот плейлист? Это действие нельзя отменить.</p>
+            <div class="confirmation-buttons">
+                <button class="delete-btn" onclick="confirmDeletePlaylist()">Удалить</button>
+                <button class="cancel-btn" onclick="cancelDeletePlaylist()">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="metadataModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Редактировать информацию о треке</h3>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; color: #b3b3b3;">Название трека:</label>
+                <input type="text" id="songTitle" placeholder="Введите название трека" style="width: 100%; padding: 12px; background: #404040; border: none; border-radius: 4px; color: white;">
+            </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; color: #b3b3b3;">Исполнитель:</label>
+                <input type="text" id="songArtist" placeholder="Введите имя исполнителя" style="width: 100%; padding: 12px; background: #404040; border: none; border-radius: 4px; color: white;">
+            </div>
+            <div class="file-preview" id="filePreview" style="background: #1e3a28; padding: 12px; border-radius: 4px; margin-bottom: 16px; display: none;">
+                <h4 style="margin-bottom: 8px;">📁 Исходный файл:</h4>
+                <p style="color: #b3b3b3; font-size: 12px;" id="originalFileName"></p>
+            </div>
+            <div class="modal-actions">
+                <button onclick="confirmMetadata()" style="background: #1db954;">✅ Загрузить трек</button>
+                <button onclick="cancelMetadata()" style="background: #dc3545;">❌ Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
