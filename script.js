@@ -1208,29 +1208,12 @@ async function f63() {
   }
 }
 function f64(p84) {
-  const v148 = document.getElementById("onlineCounter");
-  if (!v148) {
-    console.error("Элемент onlineCounter не найден");
-    return;
-  }
   const v149 = parseInt(v148.textContent) || 1;
   if (v149 === p84) {
     return;
   }
   console.log(`Обновление счетчика: ${v149} -> ${p84}`);
 
-  // Создаем анимацию смены числа
-  v148.classList.add("old");
-  // TOLOOK
-  setTimeout(() => {
-    v148.textContent = p84;
-    v148.classList.remove("old");
-    v148.classList.add("new");
-    // TOLOOK
-    setTimeout(() => {
-      v148.classList.remove("new");
-    }, 300);
-  }, 150);
 }
 function f65() {
   console.log("Очистка онлайн пользователей...");
