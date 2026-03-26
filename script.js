@@ -296,10 +296,11 @@ function handleFiles(files) {
 
 let verifyMode = false;
 
-window.verify = function() {
+function verify() {
     verifyMode = true;
-    console.log('%c✅ Verify mode activated — ограничения на размер и длительность сняты', 'color: #1db954; font-weight: bold; font-size: 14px;');
-};
+    console.log('%c\u2705 Verify mode activated \u2014 \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0438\u044f \u043d\u0430 \u0440\u0430\u0437\u043c\u0435\u0440 \u0438 \u0434\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u0441\u043d\u044f\u0442\u044b', 'color: #1db954; font-weight: bold; font-size: 14px;');
+}
+window.verify = verify;
 
 function validateAndPreviewFile(file) {
     const audio = new Audio();
