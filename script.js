@@ -82,6 +82,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.querySelector('.app-container').classList.add('loaded');
         document.querySelector('.spotify-player').classList.add('loaded');
     }, 1000);
+
+
 });
 
 async function getCurrentUser() {
@@ -306,7 +308,7 @@ function validateAndPreviewFile(file) {
         const minutes = Math.floor(duration / 60);
         const seconds = Math.floor(duration % 60);
         
-        const isValid = duration >= 30 && duration <= 360;
+        const isValid = duration >= 30 && duration <= 36000;
         
         document.getElementById('fileDetails').innerHTML = `
             <div class="file-details">
@@ -1282,5 +1284,4 @@ function updatePlaylistDisplay(playlistId) {
 
     setTimeout(() => updateAllPlayButtons(), 100);
 }
-
 
